@@ -75,7 +75,8 @@
                   (self initializeProject))))
 
   (- initializeProject is
-    (let (project-config @project-config)
+    (let ((project-config @project-config)
+          (task self))
       (self sendCommand:`(swank:init-project (,@project-config))
                 handler:
                   (do (*info)
