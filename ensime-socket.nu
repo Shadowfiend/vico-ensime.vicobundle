@@ -1,6 +1,5 @@
 (class EnsimeSocket is NSObject
-  ;(ivar (id) input-stream
-  ;      (id) output-stream
+  ;(ivar (id) stream
   ;      (id) pending-data
   ;      (id) pending-commands
   ;      (id) current-data-write-offset
@@ -14,24 +13,11 @@
     (set @pending-data "")
     (set @current-data-write-offset 0)
 
-    (let ((isr ((NuReference alloc) init))
-          (osr ((NuReference alloc) init))
-          (host (NSHost hostWithName:"localhost")))
-      (NSStream getStreamsToHost:host port:port inputStream:isr outputStream:osr)
+    (set @stream (ViBufferedStream streamWithHost:"localhost" port:(port stringValue)))
+    (@stream setDelegate:self)
 
-      (set @input-stream (isr value))
-      (set @output-stream (osr value))
+    (@stream schedule)
 
-      (@input-stream setDelegate:self)
-      (@output-stream setDelegate:self)
-      
-      (@input-stream scheduleInRunLoop:(NSRunLoop currentRunLoop)
-                               forMode:NSDefaultRunLoopMode)
-      (@output-stream scheduleInRunLoop:(NSRunLoop currentRunLoop)
-                                forMode:NSDefaultRunLoopMode)
-
-      (@input-stream open)
-      (@output-stream open))
     self)
 
   (- sendCommandString:(id)commandString is
@@ -47,7 +33,8 @@
                     (else
                          (lengthHex substringToIndex:6))))
           (let (fullCommandString (+ lengthString commandString))
-            (@output-stream writeData:(fullCommandString dataUsingEncoding:NSUTF8StringEncoding allowLossyConversion:YES)))))))
+            (set @pending-data (+ @pending-data fullCommandString))
+            (@stream writeString:fullCommandString))))))
 
   (- sendCommand:(id)command is
     (let (commandString (/: / replaceWithString:":" inString:(+ "" command)))
@@ -92,27 +79,24 @@
         (self runNextCommand))))
 
   (- closeStreams is
-    ('(@input-stream @output-stream) each:(do (stream)
-      (stream close)
-      (stream removeFromRunLoop:(NSRunLoop currentRunLoop)
-                        forMode:NSDefaultRunLoopMode)))
+    (@stream close)
 
-    (set @input-stream nil)
-    (set @output-stream nil))
+    (set @stream nil))
 
-  (- (void) stream:(id)stream handleEvent:(int)event is
+  (- (void)stream:(id)stream handleEvent:(int)event is
     (case event
       (NSStreamEventHasBytesAvailable
-        (if (== stream @input-stream)
-          (let (data (@input-stream readData))
-            (let (string (NSString stringWithData:data encoding:NSASCIIStringEncoding))
-              (if (!= string nil)
-                (set @pending-commands (+ @pending-commands (NSString stringWithData:data encoding:NSASCIIStringEncoding)))
-                (self runNextCommand))))))
+        (let (data (stream data))
+          (let (string (NSString stringWithData:data encoding:NSASCIIStringEncoding))
+            (if (!= string nil)
+              (set @pending-commands (+ @pending-commands (NSString stringWithData:data encoding:NSASCIIStringEncoding)))
+              (self runNextCommand)))))
       (NSStreamEventHasSpaceAvailable
-        (if (== stream @output-stream)
-          (self sendPendingData)))
+          (self sendPendingData))
       (NSStreamEventErrorOccurred
         (let ((status (stream streamStatus))
               (error (stream streamError)))
-          (print "Stream error for #{stream}; status #{status}; error  #{(error code)} #{(error localizedDescription)}\n\n"))))))
+          (print "Stream error for #{stream}; status #{status}; error  #{(error code)} #{(error localizedDescription)}\n\n")))
+      (NSStreamEventEndEncountered
+        (print "Socket stream ended; closing.\n")
+        (stream close)))))

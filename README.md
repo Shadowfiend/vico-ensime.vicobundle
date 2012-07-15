@@ -6,9 +6,9 @@ server. ENSIME is designed for essentially adding Scala support to emacs;
 however, it is built as a generic server. We interface with it, and, thanks to
 Nu, can speak Lisp to it fairly easily.
 
-Note that this bundle currently requires a patch allowing access to NSData
-objects out of NSInput and OutputStreams that is only in my branch of Vico, at
-http://github.com/Shadowfiend/vico .
+Note that this bundle currently requires a patch allowing socket access via
+ViBufferedStream that is only fully merged in the merge branch of my Vico fork,
+at http://github.com/Shadowfiend/vico/tree/merged .
 
 License
 -------
