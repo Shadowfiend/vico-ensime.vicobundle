@@ -8,6 +8,8 @@
   <string>Antonio Salazar Cardozo</string>
   <key>description</key>
   <string>Interface to ensime for Scala semantic data. Builds on top of pointy-haired-boss.</string>
+  <key>name</key>
+  <string>Vico-ENSIME</string>
   <key>uuid</key>
   <string>e35b7ff0-caed-11e1-9b23-0800200c9a66</string>
 </dict>
