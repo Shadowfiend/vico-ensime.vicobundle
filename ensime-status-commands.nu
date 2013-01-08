@@ -1,10 +1,16 @@
 (load "match")
 
-(function compiler-ready (task args)
-  (task sendCommand:'(swank:typecheck-file "/Users/Shadowfiend/openstudy-v2/src/main/scala/com/openstudy/model/User.scala")
-            handler:
-              (do (ok)
-                (print "On the mofo.\n"))))
+(set ensime-file-data (NSMutableDictionary dictionaryWithCapacity:15))
+
+(function compiler-ready (project args)
+  ((current-window) showMessage:"Compiler ready. The magic begins now.")
+  ;(project sendCommand:'(swank:typecheck-file "/Users/Shadowfiend/openstudy-v2/src/main/scala/com/openstudy/model/User.scala")
+  ;          handler:
+  ;            (do (ok)
+  ;              (print "On the mofo.\n"))))
+  )
+(function full-typecheck-finished (project args)
+  ((current-window) showMessage:"Completed a first typecheck."))
 
 (function add-scope-component-in-range (document scope-component range)
   (let ((scope (document scopeAtLocation:(head range)))

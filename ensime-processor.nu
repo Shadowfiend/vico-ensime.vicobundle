@@ -14,7 +14,9 @@
       (print "Uh-oh, aborting. Shit got real: #{code} #{error}.\n"))))
 
 (macro background-message (*body)
-  (print "Whoa got some background message all right. Dat #{*body}.\n"))
+  (match (*body)
+    ((code message)
+      ((current-window) showMessage:message))))
 
 (macro process (command-parts)
   (match (eval command-parts)
